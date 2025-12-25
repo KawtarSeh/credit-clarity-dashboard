@@ -1,4 +1,4 @@
-import { User, LogOut, BarChart3 } from 'lucide-react';
+import { User, LogOut, BarChart3, LayoutDashboard, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -8,26 +8,58 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { User as UserType } from '@/types/client';
+import { cn } from '@/lib/utils';
+
+type Section = 'dashboard' | 'clients';
 
 interface HeaderProps {
   user: UserType;
   onLogout: () => void;
+  currentSection: Section;
+  onSectionChange: (section: Section) => void;
 }
 
-export function Header({ user, onLogout }: HeaderProps) {
+export function Header({ user, onLogout, currentSection, onSectionChange }: HeaderProps) {
   return (
     <header className="sticky top-0 z-50 glass border-b border-border">
       <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-primary shadow-glow">
-            <BarChart3 className="h-5 w-5 text-primary-foreground" />
+        <div className="flex items-center gap-8">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-primary shadow-glow">
+              <BarChart3 className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="font-display text-xl font-bold tracking-tight">
+                CreditScore<span className="text-primary">AI</span>
+              </h1>
+              <p className="text-xs text-muted-foreground">Intelligent Risk Assessment</p>
+            </div>
           </div>
-          <div>
-            <h1 className="font-display text-xl font-bold tracking-tight">
-              CreditScore<span className="text-primary">AI</span>
-            </h1>
-            <p className="text-xs text-muted-foreground">Intelligent Risk Assessment</p>
-          </div>
+
+          <nav className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              onClick={() => onSectionChange('dashboard')}
+              className={cn(
+                "gap-2",
+                currentSection === 'dashboard' && "bg-accent text-accent-foreground"
+              )}
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              Dashboard
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => onSectionChange('clients')}
+              className={cn(
+                "gap-2",
+                currentSection === 'clients' && "bg-accent text-accent-foreground"
+              )}
+            >
+              <Users className="h-4 w-4" />
+              Clients
+            </Button>
+          </nav>
         </div>
 
         <DropdownMenu>
