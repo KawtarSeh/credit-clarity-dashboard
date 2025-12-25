@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Users, Plus, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,11 +15,23 @@ export function ClientsPage() {
   const { clients, addClient, updateClient, deleteClient, getClient } = useClients();
   const [view, setView] = useState<View>('list');
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(6);
 
-  const selectedClient = selectedClientId ? getClient(selectedClientId) : null;
+  // Fetch selected client when ID changes
+  useEffect(() => {
+    const fetchSelectedClient = async () => {
+      if (selectedClientId) {
+        const client = await getClient(selectedClientId);
+        setSelectedClient(client || null);
+      } else {
+        setSelectedClient(null);
+      }
+    };
+    fetchSelectedClient();
+  }, [selectedClientId, getClient]);
 
   const filteredClients = useMemo(() => {
     const query = searchQuery.toLowerCase();
