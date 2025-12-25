@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Users, Plus, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ClientCard } from '@/components/clients/ClientCard';
 import { ClientForm } from '@/components/clients/ClientForm';
 import { ClientDetail } from '@/components/clients/ClientDetail';
+import { PaginationControls } from '@/components/ui/pagination-controls';
 import { Client } from '@/types/client';
 import { useClients } from '@/hooks/useClients';
 
@@ -15,17 +16,36 @@ export function ClientsPage() {
   const [view, setView] = useState<View>('list');
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(6);
 
   const selectedClient = selectedClientId ? getClient(selectedClientId) : null;
 
-  const filteredClients = clients.filter(client => {
+  const filteredClients = useMemo(() => {
     const query = searchQuery.toLowerCase();
-    return (
+    return clients.filter(client =>
       client.firstName.toLowerCase().includes(query) ||
       client.lastName.toLowerCase().includes(query) ||
       client.email.toLowerCase().includes(query)
     );
-  });
+  }, [clients, searchQuery]);
+
+  const totalPages = Math.ceil(filteredClients.length / itemsPerPage);
+  const paginatedClients = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredClients.slice(start, start + itemsPerPage);
+  }, [filteredClients, currentPage, itemsPerPage]);
+
+  // Reset to page 1 when search changes
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1);
+  };
+
+  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1);
+  };
 
   const handleAddClient = (data: Omit<Client, 'id' | 'createdAt' | 'updatedAt'>) => {
     addClient(data);
@@ -103,21 +123,32 @@ export function ClientsPage() {
         <Input
           placeholder="Search clients by name or email..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => handleSearch(e.target.value)}
           className="pl-10"
         />
       </div>
 
       {filteredClients.length > 0 ? (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {filteredClients.map((client) => (
-            <ClientCard
-              key={client.id}
-              client={client}
-              onClick={() => handleClientClick(client.id)}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {paginatedClients.map((client) => (
+              <ClientCard
+                key={client.id}
+                client={client}
+                onClick={() => handleClientClick(client.id)}
+              />
+            ))}
+          </div>
+          
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={filteredClients.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            onItemsPerPageChange={handleItemsPerPageChange}
+          />
+        </>
       ) : (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <Users className="h-12 w-12 text-muted-foreground/50 mb-4" />

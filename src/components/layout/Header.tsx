@@ -1,4 +1,4 @@
-import { User, LogOut, BarChart3, LayoutDashboard, Users } from 'lucide-react';
+import { User, LogOut, BarChart3, LayoutDashboard, Users, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -10,7 +10,7 @@ import {
 import { User as UserType } from '@/types/client';
 import { cn } from '@/lib/utils';
 
-type Section = 'dashboard' | 'clients';
+export type Section = 'dashboard' | 'clients' | 'profile';
 
 interface HeaderProps {
   user: UserType;
@@ -76,6 +76,11 @@ export function Header({ user, onLogout, currentSection, onSectionChange }: Head
               <p className="text-sm font-medium">{user.name}</p>
               <p className="text-xs text-muted-foreground">{user.email}</p>
             </div>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => onSectionChange('profile')}>
+              <Settings className="mr-2 h-4 w-4" />
+              Profile Settings
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={onLogout} className="text-destructive focus:text-destructive">
               <LogOut className="mr-2 h-4 w-4" />
