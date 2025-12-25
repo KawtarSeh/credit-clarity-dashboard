@@ -1,4 +1,4 @@
-import { ArrowLeft, Edit, Trash2, User, Mail, Phone, Calendar, Briefcase, DollarSign, CreditCard, Clock, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, User, Mail, Phone, Calendar, Briefcase, DollarSign, CreditCard, Clock, AlertTriangle, FileDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Client } from '@/types/client';
 import { calculateCreditScore, getScoreColor, getScoreBgColor } from '@/lib/creditScoring';
+import { exportClientReport } from '@/lib/pdfExport';
 import { cn } from '@/lib/utils';
 
 interface ClientDetailProps {
@@ -38,6 +39,10 @@ export function ClientDetail({ client, onBack, onEdit, onDelete }: ClientDetailP
           <h2 className="font-display text-2xl font-bold">Client Profile</h2>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => exportClientReport(client)}>
+            <FileDown className="h-4 w-4 mr-2" />
+            Export PDF
+          </Button>
           <Button variant="outline" onClick={onEdit}>
             <Edit className="h-4 w-4 mr-2" />
             Edit
