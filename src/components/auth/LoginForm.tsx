@@ -9,9 +9,10 @@ import { useToast } from '@/hooks/use-toast';
 
 interface LoginFormProps {
   onLogin: (email: string, password: string) => Promise<boolean>;
+  onSignup: (name: string, email: string, password: string) => Promise<boolean>;
 }
 
-export function LoginForm({ onLogin }: LoginFormProps) {
+export function LoginForm({ onLogin, onSignup }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -38,34 +39,44 @@ export function LoginForm({ onLogin }: LoginFormProps) {
   };
 
   const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (password !== confirmPassword) {
-      toast({
-        title: "Passwords don't match",
-        description: "Please ensure both passwords are identical.",
-        variant: "destructive",
-      });
-      return;
-    }
+  e.preventDefault();
 
-    if (password.length < 6) {
-      toast({
-        title: "Password too short",
-        description: "Password must be at least 6 characters long.",
-        variant: "destructive",
-      });
-      return;
-    }
+  if (password !== confirmPassword) {
+    toast({
+      title: "Passwords don't match",
+      description: "Please ensure both passwords are identical.",
+      variant: "destructive",
+    });
+    return;
+  }
 
-    setIsLoading(true);
-    
-    // Simulate email verification process
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    setSignupSuccess(true);
+  if (password.length < 6) {
+    toast({
+      title: "Password too short",
+      description: "Password must be at least 6 characters long.",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  setIsLoading(true);
+
+  const success = await onSignup(name, email, password);
+
+  if (!success) {
+    toast({
+      title: "Signup failed",
+      description: "Unable to create account.",
+      variant: "destructive",
+    });
     setIsLoading(false);
-  };
+    return;
+  }
+
+  setSignupSuccess(true);
+  setIsLoading(false);
+};
+
 
   if (signupSuccess) {
     return (
@@ -82,9 +93,7 @@ export function LoginForm({ onLogin }: LoginFormProps) {
               We've sent a verification link to <span className="font-medium text-foreground">{email}</span>. 
               Click the link to activate your account.
             </p>
-            <p className="text-sm text-muted-foreground mb-6">
-              (Demo mode: Click below to continue without verification)
-            </p>
+          
             <Button 
               onClick={async () => {
                 const success = await onLogin(email, password);

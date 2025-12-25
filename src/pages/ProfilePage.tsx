@@ -24,14 +24,24 @@ export function ProfilePage({ user, onUpdateUser, onBack }: ProfilePageProps) {
       return;
     }
 
-    setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    onUpdateUser({ name: name.trim(), email: email.trim() });
-    toast.success('Profile updated successfully');
-    setIsLoading(false);
+    if (name === user.name && email === user.email) {
+      toast.info('No changes detected');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      await onUpdateUser({ name: name.trim(), email: email.trim() });
+      toast.success('Profile updated successfully');
+    } catch {
+      toast.error('Failed to update profile');
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+
+
 
   return (
     <div className="space-y-6">

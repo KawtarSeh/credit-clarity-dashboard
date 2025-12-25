@@ -25,6 +25,7 @@ export function Dashboard({ user, onLogout, onUpdateUser }: DashboardProps) {
   const handleBackFromProfile = useCallback(() => {
     setCurrentSection(previousSection);
   }, [previousSection]);
+  
 
   return (
     <div className="min-h-screen bg-background">

@@ -23,14 +23,14 @@ interface VerifyEmailRequest {
 
 // API endpoints for authentication
 const AUTH_ENDPOINTS = {
-  LOGIN: '/auth/login',
-  SIGNUP: '/auth/signup',
-  LOGOUT: '/auth/logout',
-  VERIFY_EMAIL: '/auth/verify-email',
-  FORGOT_PASSWORD: '/auth/forgot-password',
-  RESET_PASSWORD: '/auth/reset-password',
-  ME: '/auth/me',
-  UPDATE_PROFILE: '/auth/profile',
+  LOGIN: '/api/auth/login',
+  SIGNUP: '/api/auth/signup',
+  LOGOUT: '/api/auth/logout',
+  VERIFY_EMAIL: '/api/auth/verify-email',
+  FORGOT_PASSWORD: '/api/auth/forgot-password',
+  RESET_PASSWORD: '/api/auth/reset-password',
+  ME: '/api/auth/me',
+  UPDATE_PROFILE: '/api/auth/profile',
 };
 
 export const authService = {

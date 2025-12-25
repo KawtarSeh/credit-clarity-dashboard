@@ -5,30 +5,27 @@ import { authService } from '@/services/authService';
 const AUTH_KEY = 'creditscore_auth';
 const TOKEN_KEY = 'creditscore_token';
 
-// Set to true to use real API, false for localStorage demo mode
 const USE_API = import.meta.env.VITE_USE_API === 'true';
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // 🔹 Restore session
   useEffect(() => {
     const initAuth = async () => {
-      const storedToken = localStorage.getItem(TOKEN_KEY);
-      const storedUser = localStorage.getItem(AUTH_KEY);
+      const token = localStorage.getItem(TOKEN_KEY);
 
-      if (USE_API && storedToken) {
-        authService.setToken(storedToken);
+      if (USE_API && token) {
+        authService.setToken(token);
         const response = await authService.getCurrentUser();
+
         if (response.data) {
           setUser(response.data);
+          localStorage.setItem(AUTH_KEY, JSON.stringify(response.data));
         } else {
-          // Token invalid, clear storage
-          localStorage.removeItem(TOKEN_KEY);
-          localStorage.removeItem(AUTH_KEY);
+          localStorage.clear();
         }
-      } else if (storedUser) {
-        setUser(JSON.parse(storedUser));
       }
       setIsLoading(false);
     };
@@ -36,71 +33,64 @@ export function useAuth() {
     initAuth();
   }, []);
 
+  // 🔹 LOGIN
   const login = useCallback(async (email: string, password: string): Promise<boolean> => {
-    if (USE_API) {
-      const response = await authService.login({ email, password });
-      if (response.data) {
-        localStorage.setItem(TOKEN_KEY, response.data.token);
-        localStorage.setItem(AUTH_KEY, JSON.stringify(response.data.user));
-        setUser(response.data.user);
-        return true;
-      }
-      return false;
-    }
+    if (!USE_API) return false;
 
-    // Demo mode - simulate API call
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    if (email && password.length >= 4) {
-      const user: User = {
-        id: crypto.randomUUID(),
-        email,
-        name: email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-      };
-      localStorage.setItem(AUTH_KEY, JSON.stringify(user));
-      setUser(user);
+    const response = await authService.login({ email, password });
+
+    if (response.data) {
+      localStorage.setItem(TOKEN_KEY, response.data.token);
+      localStorage.setItem(AUTH_KEY, JSON.stringify(response.data.user));
+      setUser(response.data.user);
       return true;
     }
+
     return false;
   }, []);
 
-  const signup = useCallback(async (name: string, email: string, password: string): Promise<boolean> => {
-    if (USE_API) {
-      const response = await authService.signup({ name, email, password });
-      return !response.error;
-    }
+  // 🔹 SIGNUP + AUTO LOGIN
+  const signup = useCallback(async (
+    name: string,
+    email: string,
+    password: string
+  ): Promise<boolean> => {
+    if (!USE_API) return false;
 
-    // Demo mode - simulate signup
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return true;
-  }, []);
+    const response = await authService.signup({ name, email, password });
+    if (response.error) return false;
 
+    // Auto login after signup
+    return await login(email, password);
+  }, [login]);
+
+  // 🔹 LOGOUT
   const logout = useCallback(async () => {
     if (USE_API) {
       await authService.logout();
     }
-    localStorage.removeItem(AUTH_KEY);
-    localStorage.removeItem(TOKEN_KEY);
+    localStorage.clear();
     setUser(null);
   }, []);
 
+  // 🔹 UPDATE PROFILE
   const updateUser = useCallback(async (updates: Partial<User>) => {
-    if (user) {
-      if (USE_API) {
-        const response = await authService.updateProfile(updates);
-        if (response.data) {
-          localStorage.setItem(AUTH_KEY, JSON.stringify(response.data));
-          setUser(response.data);
-          return;
-        }
-      }
-      
-      // Demo mode
-      const updatedUser = { ...user, ...updates };
-      localStorage.setItem(AUTH_KEY, JSON.stringify(updatedUser));
-      setUser(updatedUser);
+    if (!user || !USE_API) return;
+
+    const response = await authService.updateProfile(updates);
+    if (response.data) {
+      setUser(response.data);
+      localStorage.setItem(AUTH_KEY, JSON.stringify(response.data));
     }
   }, [user]);
 
-  return { user, isLoading, login, signup, logout, updateUser, isAuthenticated: !!user };
+  return {
+    user,
+    isLoading,
+    login,
+    signup,
+    logout,
+    updateUser,
+    isAuthenticated: !!user,
+  };
 }
