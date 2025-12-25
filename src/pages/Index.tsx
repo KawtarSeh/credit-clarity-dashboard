@@ -3,7 +3,7 @@ import { LoginForm } from '@/components/auth/LoginForm';
 import { Dashboard } from '@/pages/Dashboard';
 
 const Index = () => {
-  const { user, isLoading, login, logout, isAuthenticated } = useAuth();
+  const { user, isLoading, login, logout, updateUser, isAuthenticated } = useAuth();
 
   if (isLoading) {
     return (
@@ -17,7 +17,7 @@ const Index = () => {
     return <LoginForm onLogin={login} />;
   }
 
-  return <Dashboard user={user} onLogout={logout} />;
+  return <Dashboard user={user} onLogout={logout} onUpdateUser={updateUser} />;
 };
 
 export default Index;
