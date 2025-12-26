@@ -1,0 +1,82 @@
+# 📊 CreditScore AI – Backend (Flask API)
+
+## 🧩 Description générale
+
+Ce backend fait partie du projet **CreditScore AI**, une application web destinée à l’évaluation intelligente du risque de crédit des clients à l’aide de modèles d’intelligence artificielle.
+
+Il fournit une **API REST sécurisée** consommée par un frontend React.
+
+---
+
+## 🎯 Objectifs du backend
+
+- Authentifier les utilisateurs (analystes financiers)
+- Sécuriser les accès avec JWT
+- Gérer les données clients (CRUD)
+- Préparer l’intégration du modèle IA de scoring
+- Communiquer avec une base PostgreSQL
+
+---
+
+## 🛠️ Stack technique
+
+- **Framework** : Flask
+- **Base de données** : PostgreSQL
+- **ORM** : SQLAlchemy
+- **Migrations** : Flask-Migrate
+- **Authentification** : Flask-JWT-Extended
+- **Sécurité** : Werkzeug (hash des mots de passe)
+- **CORS** : Flask-CORS
+
+---
+
+## 📁 Structure du projet
+
+backend/
+│
+├── app/
+│ ├── init.py # Flask app factory
+│ ├── config.py # Configuration (DB, JWT, secret key)
+│ ├── extensions.py # db, migrate, jwt
+│ ├── models.py # Modèles (User, Client)
+│ ├── routes/
+│ │ └── auth.py # Routes d’authentification
+│
+├── migrations/ # Migrations de la base
+├── requirements.txt # Dépendances Python
+├── run.py # Point d’entrée Flask
+└── README.md # Documentation backend
+
+
+---
+
+## 🔐 Authentification (JWT)
+
+Le backend utilise **JSON Web Tokens (JWT)** pour sécuriser les routes.
+
+### Fonctionnalités disponibles :
+- Inscription
+- Connexion
+- Récupération de l’utilisateur connecté
+- Mise à jour du profil
+- Déconnexion
+
+### Endpoints Auth
+
+| Méthode | Endpoint | Description |
+|------|---------|------------|
+| POST | `/api/auth/signup` | Créer un compte |
+| POST | `/api/auth/login` | Connexion |
+| GET | `/api/auth/me` | Utilisateur connecté |
+| PATCH | `/api/auth/profile` | Modifier le profil |
+| POST | `/api/auth/logout` | Déconnexion |
+
+
+### Base de données & migrations
+
+Commandes pour gérer la base de données :
+
+flask db init
+flask db migrate -m "Initial migration"
+flask db upgrade
+
