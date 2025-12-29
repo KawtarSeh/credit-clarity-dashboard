@@ -4,7 +4,6 @@ import { calculateCreditScore } from './creditScoring';
 
 export function exportClientReport(client: Client): void {
   const { score, grade, riskLevel } = calculateCreditScore(client);
-  const debtToIncomeRatio = ((client.monthlyDebt * 12) / client.annualIncome * 100).toFixed(1);
   
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -20,7 +19,7 @@ export function exportClientReport(client: Client): void {
   
   doc.setFontSize(12);
   doc.setFont('helvetica', 'normal');
-  doc.text('Credit Assessment Report', pageWidth - 20, 25, { align: 'right' });
+  doc.text('Rapport d\'Évaluation de Crédit', pageWidth - 20, 25, { align: 'right' });
   
   // Reset text color
   doc.setTextColor(0, 0, 0);
@@ -28,13 +27,13 @@ export function exportClientReport(client: Client): void {
   // Client Name
   doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
-  doc.text(`${client.firstName} ${client.lastName}`, 20, 55);
+  doc.text(`${client.prenom || ''} ${client.nom || 'Client'}`, 20, 55);
   
   // Report Date
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(100, 100, 100);
-  doc.text(`Generated: ${new Date().toLocaleDateString('en-US', { 
+  doc.text(`Généré le: ${new Date().toLocaleDateString('fr-FR', { 
     year: 'numeric', 
     month: 'long', 
     day: 'numeric' 
@@ -73,15 +72,16 @@ export function exportClientReport(client: Client): void {
   
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
-  doc.text('Personal Information', 20, yPos);
+  doc.text('Informations Personnelles', 20, yPos);
   yPos += 10;
   
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   const personalInfo = [
-    ['Email', client.email],
-    ['Phone', client.phone],
-    ['Date of Birth', new Date(client.dateOfBirth).toLocaleDateString()],
+    ['Nom', client.nom || '-'],
+    ['Prénom', client.prenom || '-'],
+    ['Âge', client.age ? `${client.age} ans` : '-'],
+    ['Historique', client.credit_history_age || '-'],
   ];
   
   personalInfo.forEach(([label, value]) => {
@@ -92,49 +92,50 @@ export function exportClientReport(client: Client): void {
     yPos += 7;
   });
   
-  // Section: Financial Information
+  // Section: Credit Information
   yPos += 10;
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(0, 0, 0);
-  doc.text('Financial Information', 20, yPos);
+  doc.text('Informations de Crédit', 20, yPos);
   yPos += 10;
   
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  const financialInfo = [
-    ['Annual Income', `$${client.annualIncome.toLocaleString()}`],
-    ['Monthly Debt', `$${client.monthlyDebt.toLocaleString()}`],
-    ['Debt-to-Income Ratio', `${debtToIncomeRatio}%`],
-    ['Existing Loans', client.existingLoans.toString()],
+  const creditInfo = [
+    ['Dettes Impayées', `$${(client.outstanding_debt || 0).toLocaleString()}`],
+    ['Ratio d\'Utilisation', `${(client.credit_utilization_ratio || 0).toFixed(1)}%`],
+    ['Credit Mix', client.credit_mix || '-'],
+    ['Paiements en Retard', (client.num_of_delayed_payment ?? '-').toString()],
+    ['Demandes de Crédit', (client.num_credit_inquiries ?? '-').toString()],
   ];
   
-  financialInfo.forEach(([label, value]) => {
+  creditInfo.forEach(([label, value]) => {
     doc.setTextColor(100, 100, 100);
     doc.text(label + ':', 20, yPos);
     doc.setTextColor(0, 0, 0);
-    doc.text(value, 70, yPos);
+    doc.text(value, 80, yPos);
     yPos += 7;
   });
   
-  // Section: Employment & Credit
+  // Section: Payment Information
   yPos += 10;
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(0, 0, 0);
-  doc.text('Employment & Credit History', 20, yPos);
+  doc.text('Informations de Paiement', 20, yPos);
   yPos += 10;
   
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  const employmentInfo = [
-    ['Employment Status', client.employmentStatus.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase())],
-    ['Years at Current Job', `${client.employmentYears} years`],
-    ['Credit History', client.creditHistory.replace(/\b\w/g, c => c.toUpperCase())],
-    ['Payment History', client.paymentHistory.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())],
+  const paymentInfo = [
+    ['Paiement Minimum', client.payment_of_min_amount === 'Yes' ? 'Oui' : client.payment_of_min_amount === 'No' ? 'Non' : 'N/A'],
+    ['EMI Mensuel', `$${(client.total_emi_per_month || 0).toLocaleString()}`],
+    ['Solde Mensuel', `$${(client.monthly_balance || 0).toLocaleString()}`],
+    ['Investissement Mensuel', `$${(client.amount_invested_monthly || 0).toLocaleString()}`],
   ];
   
-  employmentInfo.forEach(([label, value]) => {
+  paymentInfo.forEach(([label, value]) => {
     doc.setTextColor(100, 100, 100);
     doc.text(label + ':', 20, yPos);
     doc.setTextColor(0, 0, 0);
@@ -147,17 +148,17 @@ export function exportClientReport(client: Client): void {
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(0, 0, 0);
-  doc.text('Risk Assessment', 20, yPos);
+  doc.text('Évaluation des Risques', 20, yPos);
   yPos += 10;
   
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   
   doc.setTextColor(100, 100, 100);
-  doc.text('Risk Level:', 20, yPos);
+  doc.text('Niveau de Risque:', 20, yPos);
   doc.setTextColor(r, g, b);
   doc.setFont('helvetica', 'bold');
-  doc.text(riskLevel, 70, yPos);
+  doc.text(riskLevel, 80, yPos);
   yPos += 15;
   
   // Risk factors
@@ -165,24 +166,24 @@ export function exportClientReport(client: Client): void {
   doc.setFont('helvetica', 'normal');
   const riskFactors: string[] = [];
   
-  if (parseFloat(debtToIncomeRatio) > 35) {
-    riskFactors.push(`• High debt-to-income ratio (${debtToIncomeRatio}%)`);
+  if ((client.credit_utilization_ratio || 0) > 30) {
+    riskFactors.push(`• Ratio d'utilisation élevé (${(client.credit_utilization_ratio || 0).toFixed(1)}%)`);
   }
-  if (client.existingLoans > 3) {
-    riskFactors.push(`• Multiple existing loans (${client.existingLoans})`);
+  if ((client.num_of_delayed_payment || 0) > 0) {
+    riskFactors.push(`• Paiements en retard (${client.num_of_delayed_payment})`);
   }
-  if (client.paymentHistory !== 'always-on-time') {
-    riskFactors.push('• Payment history concerns');
+  if (client.payment_of_min_amount === 'No') {
+    riskFactors.push('• Ne paie pas le minimum requis');
   }
-  if (client.employmentYears < 2) {
-    riskFactors.push('• Limited employment tenure');
+  if (client.credit_mix === 'Bad') {
+    riskFactors.push('• Mauvaise diversification de crédit');
   }
   if (grade === 'A') {
-    riskFactors.push('✓ Excellent credit profile - Low risk');
+    riskFactors.push('✓ Excellent profil de crédit - Risque faible');
   }
   
   if (riskFactors.length === 0) {
-    riskFactors.push('No significant risk factors identified');
+    riskFactors.push('Aucun facteur de risque significatif identifié');
   }
   
   riskFactors.forEach(factor => {
@@ -196,9 +197,9 @@ export function exportClientReport(client: Client): void {
   
   doc.setFontSize(8);
   doc.setTextColor(100, 100, 100);
-  doc.text('This report is generated by CreditScore AI for informational purposes only.', pageWidth / 2, 280, { align: 'center' });
-  doc.text('It should not be considered as financial advice.', pageWidth / 2, 285, { align: 'center' });
+  doc.text('Ce rapport est généré par CreditScore AI à titre informatif uniquement.', pageWidth / 2, 280, { align: 'center' });
+  doc.text('Il ne constitue pas un conseil financier.', pageWidth / 2, 285, { align: 'center' });
   
   // Save the PDF
-  doc.save(`credit-report-${client.firstName}-${client.lastName}-${new Date().toISOString().split('T')[0]}.pdf`);
+  doc.save(`rapport-credit-${client.prenom || 'client'}-${client.nom || ''}-${new Date().toISOString().split('T')[0]}.pdf`);
 }

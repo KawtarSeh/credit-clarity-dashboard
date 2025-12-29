@@ -18,24 +18,28 @@ import { Client } from '@/types/client';
 import { useToast } from '@/hooks/use-toast';
 
 const clientSchema = z.object({
-  firstName: z.string().min(2, 'First name must be at least 2 characters'),
-  lastName: z.string().min(2, 'Last name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  phone: z.string().min(10, 'Phone number must be at least 10 digits'),
-  dateOfBirth: z.string().min(1, 'Date of birth is required'),
-  annualIncome: z.number().min(0, 'Annual income must be positive'),
-  monthlyDebt: z.number().min(0, 'Monthly debt must be positive'),
-  employmentStatus: z.enum(['employed', 'self-employed', 'unemployed', 'retired']),
-  employmentYears: z.number().min(0, 'Years must be positive'),
-  creditHistory: z.enum(['excellent', 'good', 'fair', 'poor', 'none']),
-  existingLoans: z.number().min(0, 'Number of loans must be positive'),
-  paymentHistory: z.enum(['always-on-time', 'occasional-late', 'frequent-late', 'defaults']),
+  nom: z.string().min(2, 'Le nom doit contenir au moins 2 caractères').optional().or(z.literal('')),
+  prenom: z.string().min(2, 'Le prénom doit contenir au moins 2 caractères').optional().or(z.literal('')),
+  age: z.number().min(18, 'L\'âge minimum est 18 ans').max(120).optional().nullable(),
+  num_of_delayed_payment: z.number().min(0).optional().nullable(),
+  changed_credit_limit: z.number().optional().nullable(),
+  num_credit_inquiries: z.number().min(0).optional().nullable(),
+  credit_mix: z.enum(['Standard', 'Good', 'Bad']).optional(),
+  outstanding_debt: z.number().min(0).optional().nullable(),
+  credit_utilization_ratio: z.number().min(0).max(100).optional().nullable(),
+  credit_history_age: z.string().optional().or(z.literal('')),
+  payment_of_min_amount: z.enum(['Yes', 'No', 'NM']).optional(),
+  total_emi_per_month: z.number().min(0).optional().nullable(),
+  amount_invested_monthly: z.number().min(0).optional().nullable(),
+  payment_behaviour: z.string().optional().or(z.literal('')),
+  monthly_balance: z.number().optional().nullable(),
+  credit_history_age_months: z.number().min(0).optional().nullable(),
 });
 
 type ClientFormData = z.infer<typeof clientSchema>;
 
 interface ClientFormProps {
-  onSubmit: (data: Omit<Client, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  onSubmit: (data: Omit<Client, 'id' | 'created_at' | 'updated_at'>) => void;
   onCancel: () => void;
   initialData?: Client;
 }
@@ -52,29 +56,71 @@ export function ClientForm({ onSubmit, onCancel, initialData }: ClientFormProps)
     formState: { errors },
   } = useForm<ClientFormData>({
     resolver: zodResolver(clientSchema),
-    defaultValues: initialData || {
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: '',
-      dateOfBirth: '',
-      annualIncome: 0,
-      monthlyDebt: 0,
-      employmentStatus: 'employed',
-      employmentYears: 0,
-      creditHistory: 'good',
-      existingLoans: 0,
-      paymentHistory: 'always-on-time',
+    defaultValues: initialData ? {
+      nom: initialData.nom || '',
+      prenom: initialData.prenom || '',
+      age: initialData.age || null,
+      num_of_delayed_payment: initialData.num_of_delayed_payment || null,
+      changed_credit_limit: initialData.changed_credit_limit || null,
+      num_credit_inquiries: initialData.num_credit_inquiries || null,
+      credit_mix: initialData.credit_mix || 'Standard',
+      outstanding_debt: initialData.outstanding_debt || null,
+      credit_utilization_ratio: initialData.credit_utilization_ratio || null,
+      credit_history_age: initialData.credit_history_age || '',
+      payment_of_min_amount: initialData.payment_of_min_amount || 'Yes',
+      total_emi_per_month: initialData.total_emi_per_month || null,
+      amount_invested_monthly: initialData.amount_invested_monthly || null,
+      payment_behaviour: initialData.payment_behaviour || '',
+      monthly_balance: initialData.monthly_balance || null,
+      credit_history_age_months: initialData.credit_history_age_months || null,
+    } : {
+      nom: '',
+      prenom: '',
+      age: null,
+      num_of_delayed_payment: null,
+      changed_credit_limit: null,
+      num_credit_inquiries: null,
+      credit_mix: 'Standard',
+      outstanding_debt: null,
+      credit_utilization_ratio: null,
+      credit_history_age: '',
+      payment_of_min_amount: 'Yes',
+      total_emi_per_month: null,
+      amount_invested_monthly: null,
+      payment_behaviour: '',
+      monthly_balance: null,
+      credit_history_age_months: null,
     },
   });
 
   const onFormSubmit = async (data: ClientFormData) => {
     setIsSubmitting(true);
     await new Promise(resolve => setTimeout(resolve, 500));
-    onSubmit(data as Omit<Client, 'id' | 'createdAt' | 'updatedAt'>);
+    
+    // Clean up the data - convert empty strings to undefined and handle nulls
+    const cleanedData: Omit<Client, 'id' | 'created_at' | 'updated_at'> = {
+      nom: data.nom || undefined,
+      prenom: data.prenom || undefined,
+      age: data.age ?? undefined,
+      num_of_delayed_payment: data.num_of_delayed_payment ?? undefined,
+      changed_credit_limit: data.changed_credit_limit ?? undefined,
+      num_credit_inquiries: data.num_credit_inquiries ?? undefined,
+      credit_mix: data.credit_mix,
+      outstanding_debt: data.outstanding_debt ?? undefined,
+      credit_utilization_ratio: data.credit_utilization_ratio ?? undefined,
+      credit_history_age: data.credit_history_age || undefined,
+      payment_of_min_amount: data.payment_of_min_amount,
+      total_emi_per_month: data.total_emi_per_month ?? undefined,
+      amount_invested_monthly: data.amount_invested_monthly ?? undefined,
+      payment_behaviour: data.payment_behaviour || undefined,
+      monthly_balance: data.monthly_balance ?? undefined,
+      credit_history_age_months: data.credit_history_age_months ?? undefined,
+    };
+    
+    onSubmit(cleanedData);
     toast({
-      title: initialData ? 'Client updated' : 'Client added',
-      description: `${data.firstName} ${data.lastName} has been ${initialData ? 'updated' : 'added'} successfully.`,
+      title: initialData ? 'Client mis à jour' : 'Client ajouté',
+      description: `${data.prenom || ''} ${data.nom || ''} a été ${initialData ? 'mis à jour' : 'ajouté'} avec succès.`,
     });
     setIsSubmitting(false);
   };
@@ -86,177 +132,206 @@ export function ClientForm({ onSubmit, onCancel, initialData }: ClientFormProps)
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <h2 className="font-display text-2xl font-bold">
-          {initialData ? 'Edit Client' : 'Add New Client'}
+          {initialData ? 'Modifier le Client' : 'Ajouter un Client'}
         </h2>
       </div>
 
       <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
+        {/* Personal Information */}
         <Card>
           <CardHeader>
-            <CardTitle>Personal Information</CardTitle>
+            <CardTitle>Informations Personnelles</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-2">
+          <CardContent className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-2">
-              <Label htmlFor="firstName">First Name</Label>
-              <Input id="firstName" {...register('firstName')} />
-              {errors.firstName && (
-                <p className="text-sm text-destructive">{errors.firstName.message}</p>
+              <Label htmlFor="nom">Nom</Label>
+              <Input id="nom" {...register('nom')} />
+              {errors.nom && (
+                <p className="text-sm text-destructive">{errors.nom.message}</p>
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name</Label>
-              <Input id="lastName" {...register('lastName')} />
-              {errors.lastName && (
-                <p className="text-sm text-destructive">{errors.lastName.message}</p>
+              <Label htmlFor="prenom">Prénom</Label>
+              <Input id="prenom" {...register('prenom')} />
+              {errors.prenom && (
+                <p className="text-sm text-destructive">{errors.prenom.message}</p>
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" {...register('email')} />
-              {errors.email && (
-                <p className="text-sm text-destructive">{errors.email.message}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
-              <Input id="phone" {...register('phone')} />
-              {errors.phone && (
-                <p className="text-sm text-destructive">{errors.phone.message}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="dateOfBirth">Date of Birth</Label>
-              <Input id="dateOfBirth" type="date" {...register('dateOfBirth')} />
-              {errors.dateOfBirth && (
-                <p className="text-sm text-destructive">{errors.dateOfBirth.message}</p>
+              <Label htmlFor="age">Âge</Label>
+              <Input
+                id="age"
+                type="number"
+                {...register('age', { valueAsNumber: true })}
+              />
+              {errors.age && (
+                <p className="text-sm text-destructive">{errors.age.message}</p>
               )}
             </div>
           </CardContent>
         </Card>
 
+        {/* Credit Information */}
         <Card>
           <CardHeader>
-            <CardTitle>Financial Information</CardTitle>
+            <CardTitle>Informations de Crédit</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-2">
+          <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div className="space-y-2">
-              <Label htmlFor="annualIncome">Annual Income ($)</Label>
+              <Label htmlFor="num_of_delayed_payment">Paiements en Retard</Label>
               <Input
-                id="annualIncome"
+                id="num_of_delayed_payment"
                 type="number"
-                {...register('annualIncome', { valueAsNumber: true })}
+                step="0.1"
+                {...register('num_of_delayed_payment', { valueAsNumber: true })}
               />
-              {errors.annualIncome && (
-                <p className="text-sm text-destructive">{errors.annualIncome.message}</p>
-              )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="monthlyDebt">Monthly Debt ($)</Label>
+              <Label htmlFor="changed_credit_limit">Modification Limite de Crédit (%)</Label>
               <Input
-                id="monthlyDebt"
+                id="changed_credit_limit"
                 type="number"
-                {...register('monthlyDebt', { valueAsNumber: true })}
+                step="0.01"
+                {...register('changed_credit_limit', { valueAsNumber: true })}
               />
-              {errors.monthlyDebt && (
-                <p className="text-sm text-destructive">{errors.monthlyDebt.message}</p>
-              )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="existingLoans">Number of Existing Loans</Label>
+              <Label htmlFor="num_credit_inquiries">Demandes de Crédit</Label>
               <Input
-                id="existingLoans"
+                id="num_credit_inquiries"
                 type="number"
-                {...register('existingLoans', { valueAsNumber: true })}
+                step="0.1"
+                {...register('num_credit_inquiries', { valueAsNumber: true })}
               />
-              {errors.existingLoans && (
-                <p className="text-sm text-destructive">{errors.existingLoans.message}</p>
-              )}
+            </div>
+            <div className="space-y-2">
+              <Label>Type de Crédit (Credit Mix)</Label>
+              <Select
+                value={watch('credit_mix') || 'Standard'}
+                onValueChange={(value) => setValue('credit_mix', value as 'Standard' | 'Good' | 'Bad')}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Good">Bon</SelectItem>
+                  <SelectItem value="Standard">Standard</SelectItem>
+                  <SelectItem value="Bad">Mauvais</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="outstanding_debt">Dettes Impayées ($)</Label>
+              <Input
+                id="outstanding_debt"
+                type="number"
+                step="0.01"
+                {...register('outstanding_debt', { valueAsNumber: true })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="credit_utilization_ratio">Ratio d'Utilisation (%)</Label>
+              <Input
+                id="credit_utilization_ratio"
+                type="number"
+                step="0.01"
+                {...register('credit_utilization_ratio', { valueAsNumber: true })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="credit_history_age">Ancienneté de l'Historique</Label>
+              <Input
+                id="credit_history_age"
+                placeholder="ex: 5 Years and 3 Months"
+                {...register('credit_history_age')}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="credit_history_age_months">Historique (mois)</Label>
+              <Input
+                id="credit_history_age_months"
+                type="number"
+                step="0.1"
+                {...register('credit_history_age_months', { valueAsNumber: true })}
+              />
             </div>
           </CardContent>
         </Card>
 
+        {/* Payment Information */}
         <Card>
           <CardHeader>
-            <CardTitle>Employment & Credit History</CardTitle>
+            <CardTitle>Informations de Paiement</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-2">
+          <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div className="space-y-2">
-              <Label>Employment Status</Label>
+              <Label>Paiement Minimum</Label>
               <Select
-                value={watch('employmentStatus')}
-                onValueChange={(value) => setValue('employmentStatus', value as ClientFormData['employmentStatus'])}
+                value={watch('payment_of_min_amount') || 'Yes'}
+                onValueChange={(value) => setValue('payment_of_min_amount', value as 'Yes' | 'No' | 'NM')}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="employed">Employed</SelectItem>
-                  <SelectItem value="self-employed">Self-Employed</SelectItem>
-                  <SelectItem value="unemployed">Unemployed</SelectItem>
-                  <SelectItem value="retired">Retired</SelectItem>
+                  <SelectItem value="Yes">Oui</SelectItem>
+                  <SelectItem value="No">Non</SelectItem>
+                  <SelectItem value="NM">Non Mentionné</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="employmentYears">Years at Current Employment</Label>
+              <Label htmlFor="total_emi_per_month">EMI Total/Mois ($)</Label>
               <Input
-                id="employmentYears"
+                id="total_emi_per_month"
                 type="number"
-                {...register('employmentYears', { valueAsNumber: true })}
+                step="0.01"
+                {...register('total_emi_per_month', { valueAsNumber: true })}
               />
             </div>
             <div className="space-y-2">
-              <Label>Credit History</Label>
-              <Select
-                value={watch('creditHistory')}
-                onValueChange={(value) => setValue('creditHistory', value as ClientFormData['creditHistory'])}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="excellent">Excellent</SelectItem>
-                  <SelectItem value="good">Good</SelectItem>
-                  <SelectItem value="fair">Fair</SelectItem>
-                  <SelectItem value="poor">Poor</SelectItem>
-                  <SelectItem value="none">No History</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="amount_invested_monthly">Investissement Mensuel ($)</Label>
+              <Input
+                id="amount_invested_monthly"
+                type="number"
+                step="0.01"
+                {...register('amount_invested_monthly', { valueAsNumber: true })}
+              />
             </div>
             <div className="space-y-2">
-              <Label>Payment History</Label>
-              <Select
-                value={watch('paymentHistory')}
-                onValueChange={(value) => setValue('paymentHistory', value as ClientFormData['paymentHistory'])}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="always-on-time">Always On Time</SelectItem>
-                  <SelectItem value="occasional-late">Occasionally Late</SelectItem>
-                  <SelectItem value="frequent-late">Frequently Late</SelectItem>
-                  <SelectItem value="defaults">Has Defaults</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="payment_behaviour">Comportement de Paiement</Label>
+              <Input
+                id="payment_behaviour"
+                placeholder="ex: Low_spent_Small_value_payments"
+                {...register('payment_behaviour')}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="monthly_balance">Solde Mensuel ($)</Label>
+              <Input
+                id="monthly_balance"
+                type="number"
+                step="0.01"
+                {...register('monthly_balance', { valueAsNumber: true })}
+              />
             </div>
           </CardContent>
         </Card>
 
         <div className="flex justify-end gap-4">
           <Button type="button" variant="outline" onClick={onCancel}>
-            Cancel
+            Annuler
           </Button>
           <Button type="submit" disabled={isSubmitting} className="bg-gradient-primary">
             {isSubmitting ? (
               <span className="flex items-center gap-2">
                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
-                Saving...
+                Enregistrement...
               </span>
             ) : (
               <span className="flex items-center gap-2">
                 <Save className="h-4 w-4" />
-                {initialData ? 'Update Client' : 'Add Client'}
+                {initialData ? 'Mettre à jour' : 'Ajouter'}
               </span>
             )}
           </Button>

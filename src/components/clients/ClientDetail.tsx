@@ -1,4 +1,4 @@
-import { ArrowLeft, Edit, Trash2, User, Mail, Phone, Calendar, Briefcase, DollarSign, CreditCard, Clock, AlertTriangle, FileDown } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, User, CreditCard, DollarSign, TrendingUp, AlertTriangle, FileDown, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,7 +14,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Client } from '@/types/client';
-import { calculateCreditScore, getScoreColor, getScoreBgColor } from '@/lib/creditScoring';
+import { calculateCreditScore, getScoreBgColor } from '@/lib/creditScoring';
 import { exportClientReport } from '@/lib/pdfExport';
 import { cn } from '@/lib/utils';
 
@@ -27,7 +27,6 @@ interface ClientDetailProps {
 
 export function ClientDetail({ client, onBack, onEdit, onDelete }: ClientDetailProps) {
   const { score, grade, riskLevel } = calculateCreditScore(client);
-  const debtToIncomeRatio = ((client.monthlyDebt * 12) / client.annualIncome * 100).toFixed(1);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -36,35 +35,35 @@ export function ClientDetail({ client, onBack, onEdit, onDelete }: ClientDetailP
           <Button variant="ghost" size="icon" onClick={onBack}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h2 className="font-display text-2xl font-bold">Client Profile</h2>
+          <h2 className="font-display text-2xl font-bold">Profil Client</h2>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => exportClientReport(client)}>
             <FileDown className="h-4 w-4 mr-2" />
-            Export PDF
+            Exporter PDF
           </Button>
           <Button variant="outline" onClick={onEdit}>
             <Edit className="h-4 w-4 mr-2" />
-            Edit
+            Modifier
           </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive">
                 <Trash2 className="h-4 w-4 mr-2" />
-                Delete
+                Supprimer
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Delete Client</AlertDialogTitle>
+                <AlertDialogTitle>Supprimer le Client</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you sure you want to delete {client.firstName} {client.lastName}? This action cannot be undone.
+                  Êtes-vous sûr de vouloir supprimer {client.prenom} {client.nom}? Cette action est irréversible.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel>Annuler</AlertDialogCancel>
                 <AlertDialogAction onClick={onDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                  Delete
+                  Supprimer
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -83,13 +82,19 @@ export function ClientDetail({ client, onBack, onEdit, onDelete }: ClientDetailP
               {grade}
             </div>
             <p className="text-4xl font-display font-bold">{score}</p>
-            <p className="text-muted-foreground">Credit Score</p>
+            <p className="text-muted-foreground">Score de Crédit</p>
             <Badge 
               className="mt-4" 
               variant={riskLevel === 'Low' ? 'default' : riskLevel === 'Very High' ? 'destructive' : 'secondary'}
             >
-              {riskLevel} Risk
+              Risque {riskLevel}
             </Badge>
+            {client.credit_score && (
+              <div className="mt-4">
+                <p className="text-sm text-muted-foreground">Score Backend</p>
+                <Badge variant="outline" className="mt-1">{client.credit_score}</Badge>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -98,104 +103,112 @@ export function ClientDetail({ client, onBack, onEdit, onDelete }: ClientDetailP
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="h-5 w-5 text-primary" />
-              Personal Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Full Name</p>
-              <p className="font-medium">{client.firstName} {client.lastName}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground flex items-center gap-1">
-                <Mail className="h-3 w-3" /> Email
-              </p>
-              <p className="font-medium">{client.email}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground flex items-center gap-1">
-                <Phone className="h-3 w-3" /> Phone
-              </p>
-              <p className="font-medium">{client.phone}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground flex items-center gap-1">
-                <Calendar className="h-3 w-3" /> Date of Birth
-              </p>
-              <p className="font-medium">{new Date(client.dateOfBirth).toLocaleDateString()}</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Financial Information */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-primary" />
-              Financial Information
+              Informations Personnelles
             </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Annual Income</p>
-              <p className="text-2xl font-display font-bold">${client.annualIncome.toLocaleString()}</p>
+              <p className="text-sm text-muted-foreground">Nom Complet</p>
+              <p className="font-medium">{client.prenom || '-'} {client.nom || '-'}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Monthly Debt</p>
-              <p className="text-2xl font-display font-bold">${client.monthlyDebt.toLocaleString()}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Debt-to-Income Ratio</p>
-              <p className={cn(
-                "text-2xl font-display font-bold",
-                parseFloat(debtToIncomeRatio) > 50 ? "text-destructive" : parseFloat(debtToIncomeRatio) > 35 ? "text-score-fair" : "text-score-good"
-              )}>
-                {debtToIncomeRatio}%
+              <p className="text-sm text-muted-foreground flex items-center gap-1">
+                <Calendar className="h-3 w-3" /> Âge
               </p>
+              <p className="font-medium">{client.age || '-'} ans</p>
             </div>
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Existing Loans</p>
-              <p className="font-medium">{client.existingLoans}</p>
+              <p className="text-sm text-muted-foreground">Historique Crédit</p>
+              <p className="font-medium">{client.credit_history_age || '-'}</p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Employment & Credit */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Briefcase className="h-5 w-5 text-primary" />
-              Employment
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Status</p>
-              <p className="font-medium capitalize">{client.employmentStatus.replace('-', ' ')}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Years at Current Job</p>
-              <p className="font-medium">{client.employmentYears} years</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Credit History */}
+        {/* Credit Information */}
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CreditCard className="h-5 w-5 text-primary" />
-              Credit History
+              Informations de Crédit
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-4 sm:grid-cols-3">
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Dettes Impayées</p>
+              <p className="text-2xl font-display font-bold">${(client.outstanding_debt || 0).toLocaleString()}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Ratio d'Utilisation</p>
+              <p className={cn(
+                "text-2xl font-display font-bold",
+                (client.credit_utilization_ratio || 0) > 50 ? "text-destructive" : (client.credit_utilization_ratio || 0) > 30 ? "text-score-fair" : "text-score-good"
+              )}>
+                {(client.credit_utilization_ratio || 0).toFixed(1)}%
+              </p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Credit Mix</p>
+              <Badge variant="outline" className="capitalize">{client.credit_mix || 'N/A'}</Badge>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Paiements en Retard</p>
+              <p className="font-medium">{client.num_of_delayed_payment ?? '-'}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Demandes de Crédit</p>
+              <p className="font-medium">{client.num_credit_inquiries ?? '-'}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Modification Limite</p>
+              <p className="font-medium">{client.changed_credit_limit != null ? `${client.changed_credit_limit}%` : '-'}</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Payment Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5 text-primary" />
+              Paiements
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Paiement Minimum</p>
+              <Badge variant="outline">{client.payment_of_min_amount === 'Yes' ? 'Oui' : client.payment_of_min_amount === 'No' ? 'Non' : 'N/A'}</Badge>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">EMI Mensuel</p>
+              <p className="font-medium">${(client.total_emi_per_month || 0).toLocaleString()}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Solde Mensuel</p>
+              <p className="font-medium">${(client.monthly_balance || 0).toLocaleString()}</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Investment & Behavior */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-primary" />
+              Comportement Financier
             </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Credit History Quality</p>
-              <Badge variant="outline" className="capitalize">{client.creditHistory}</Badge>
+              <p className="text-sm text-muted-foreground">Investissement Mensuel</p>
+              <p className="text-2xl font-display font-bold">${(client.amount_invested_monthly || 0).toLocaleString()}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Payment History</p>
-              <Badge variant="outline" className="capitalize">{client.paymentHistory.replace(/-/g, ' ')}</Badge>
+              <p className="text-sm text-muted-foreground">Comportement de Paiement</p>
+              <p className="font-medium text-sm">{client.payment_behaviour || 'Non spécifié'}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Historique (mois)</p>
+              <p className="font-medium">{client.credit_history_age_months ?? '-'} mois</p>
             </div>
           </CardContent>
         </Card>
@@ -205,39 +218,39 @@ export function ClientDetail({ client, onBack, onEdit, onDelete }: ClientDetailP
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-primary" />
-              Risk Factors
+              Facteurs de Risque
             </CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2 text-sm">
-              {parseFloat(debtToIncomeRatio) > 35 && (
+              {(client.credit_utilization_ratio || 0) > 30 && (
                 <li className="flex items-start gap-2 text-score-poor">
                   <span>•</span>
-                  <span>High debt-to-income ratio ({debtToIncomeRatio}%)</span>
+                  <span>Ratio d'utilisation élevé ({(client.credit_utilization_ratio || 0).toFixed(1)}%)</span>
                 </li>
               )}
-              {client.existingLoans > 3 && (
+              {(client.num_of_delayed_payment || 0) > 0 && (
                 <li className="flex items-start gap-2 text-score-poor">
                   <span>•</span>
-                  <span>Multiple existing loans ({client.existingLoans})</span>
+                  <span>Paiements en retard ({client.num_of_delayed_payment})</span>
                 </li>
               )}
-              {client.paymentHistory !== 'always-on-time' && (
+              {client.payment_of_min_amount === 'No' && (
                 <li className="flex items-start gap-2 text-score-fair">
                   <span>•</span>
-                  <span>Payment history concerns</span>
+                  <span>Ne paie pas le minimum</span>
                 </li>
               )}
-              {client.employmentYears < 2 && (
+              {client.credit_mix === 'Bad' && (
                 <li className="flex items-start gap-2 text-score-fair">
                   <span>•</span>
-                  <span>Limited employment tenure</span>
+                  <span>Mauvaise diversification de crédit</span>
                 </li>
               )}
               {grade === 'A' && (
                 <li className="flex items-start gap-2 text-score-excellent">
                   <span>✓</span>
-                  <span>Excellent credit profile - Low risk</span>
+                  <span>Excellent profil de crédit - Risque faible</span>
                 </li>
               )}
             </ul>

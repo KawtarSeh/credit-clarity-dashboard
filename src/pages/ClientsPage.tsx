@@ -36,9 +36,9 @@ export function ClientsPage() {
   const filteredClients = useMemo(() => {
     const query = searchQuery.toLowerCase();
     return clients.filter(client =>
-      client.firstName.toLowerCase().includes(query) ||
-      client.lastName.toLowerCase().includes(query) ||
-      client.email.toLowerCase().includes(query)
+      (client.nom || '').toLowerCase().includes(query) ||
+      (client.prenom || '').toLowerCase().includes(query) ||
+      (client.credit_mix || '').toLowerCase().includes(query)
     );
   }, [clients, searchQuery]);
 

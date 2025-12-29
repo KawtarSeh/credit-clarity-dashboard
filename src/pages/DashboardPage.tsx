@@ -19,7 +19,7 @@ export function DashboardPage() {
   };
 
   const recentClients = [...clients]
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
     .slice(0, 5);
 
   return (
@@ -79,8 +79,8 @@ export function DashboardPage() {
                       className="flex items-center justify-between border-b border-border/50 pb-3 last:border-0 last:pb-0"
                     >
                       <div>
-                        <p className="font-medium">{client.firstName} {client.lastName}</p>
-                        <p className="text-sm text-muted-foreground">{client.email}</p>
+                        <p className="font-medium">{client.prenom || ''} {client.nom || 'Client'}</p>
+                        <p className="text-sm text-muted-foreground">{client.credit_mix || 'N/A'}</p>
                       </div>
                       <div className="text-right">
                         <p className="font-semibold">Grade {grade}</p>

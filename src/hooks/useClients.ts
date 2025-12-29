@@ -42,7 +42,7 @@ export function useClients() {
     setClients(newClients);
   }, []);
 
-  const addClient = useCallback(async (clientData: Omit<Client, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const addClient = useCallback(async (clientData: Omit<Client, 'id' | 'created_at' | 'updated_at'>) => {
     if (USE_API) {
       const response = await clientService.createClient(clientData);
       if (response.data) {
@@ -56,8 +56,8 @@ export function useClients() {
     const newClient: Client = {
       ...clientData,
       id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
     saveClients([...clients, newClient]);
     return newClient;
@@ -76,7 +76,7 @@ export function useClients() {
     // Demo mode
     const updatedClients = clients.map(client =>
       client.id === id
-        ? { ...client, ...updates, updatedAt: new Date().toISOString() }
+        ? { ...client, ...updates, updated_at: new Date().toISOString() }
         : client
     );
     saveClients(updatedClients);
