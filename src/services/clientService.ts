@@ -11,8 +11,8 @@ interface PaginatedResponse<T> {
 
 interface ClientFilters {
   search?: string;
-  employmentStatus?: string;
-  creditHistory?: string;
+  credit_mix?: string;
+  credit_score?: string;
   page?: number;
   pageSize?: number;
   sortBy?: string;
@@ -60,7 +60,7 @@ export const clientService = {
   /**
    * Create a new client
    */
-  async createClient(client: Omit<Client, 'id' | 'createdAt' | 'updatedAt'>): Promise<ApiResponse<Client>> {
+  async createClient(client: Omit<Client, 'id' | 'created_at' | 'updated_at'>): Promise<ApiResponse<Client>> {
     return apiClient.post(CLIENT_ENDPOINTS.BASE, client);
   },
 

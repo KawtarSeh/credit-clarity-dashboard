@@ -1,8 +1,8 @@
-import { User, Mail, Phone, Briefcase, Calendar } from 'lucide-react';
+import { User, CreditCard, TrendingUp, DollarSign } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Client } from '@/types/client';
-import { calculateCreditScore, getScoreColor, getScoreBgColor } from '@/lib/creditScoring';
+import { calculateCreditScore, getScoreBgColor } from '@/lib/creditScoring';
 import { cn } from '@/lib/utils';
 
 interface ClientCardProps {
@@ -26,13 +26,17 @@ export function ClientCard({ client, onClick }: ClientCardProps) {
             </div>
             <div>
               <h3 className="font-display font-semibold text-lg">
-                {client.firstName} {client.lastName}
+                {client.prenom || ''} {client.nom || 'Client'}
               </h3>
               <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <Mail className="h-3 w-3" />
-                  {client.email}
-                </span>
+                {client.age && (
+                  <span>{client.age} ans</span>
+                )}
+                {client.credit_score && (
+                  <Badge variant="outline" className="text-xs">
+                    Score: {client.credit_score}
+                  </Badge>
+                )}
               </div>
             </div>
           </div>
@@ -50,19 +54,19 @@ export function ClientCard({ client, onClick }: ClientCardProps) {
 
         <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Annual Income</p>
-            <p className="font-medium">${client.annualIncome.toLocaleString()}</p>
+            <p className="text-xs text-muted-foreground">Dettes Impayées</p>
+            <p className="font-medium">${(client.outstanding_debt || 0).toLocaleString()}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Monthly Debt</p>
-            <p className="font-medium">${client.monthlyDebt.toLocaleString()}</p>
+            <p className="text-xs text-muted-foreground">Utilisation Crédit</p>
+            <p className="font-medium">{(client.credit_utilization_ratio || 0).toFixed(1)}%</p>
           </div>
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Employment</p>
-            <p className="font-medium capitalize">{client.employmentStatus.replace('-', ' ')}</p>
+            <p className="text-xs text-muted-foreground">Credit Mix</p>
+            <p className="font-medium capitalize">{client.credit_mix || 'N/A'}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Risk Level</p>
+            <p className="text-xs text-muted-foreground">Niveau de Risque</p>
             <Badge variant={riskLevel === 'Low' ? 'default' : riskLevel === 'Very High' ? 'destructive' : 'secondary'}>
               {riskLevel}
             </Badge>
