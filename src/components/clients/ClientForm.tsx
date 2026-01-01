@@ -239,6 +239,41 @@ export function ClientForm({ onSubmit, onCancel, initialData }: ClientFormProps)
               <Label>Total EMI / Month</Label>
               <Input type="number" {...register('total_emi_per_month', { valueAsNumber: true })} />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="total_emi_per_month">EMI Total/Mois ($)</Label>
+              <Input
+                id="total_emi_per_month"
+                type="number"
+                step="0.01"
+                {...register('total_emi_per_month', { valueAsNumber: true })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="amount_invested_monthly">Investissement Mensuel ($)</Label>
+              <Input
+                id="amount_invested_monthly"
+                type="number"
+                step="0.01"
+                {...register('amount_invested_monthly', { valueAsNumber: true })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="payment_behaviour">Comportement de Paiement</Label>
+              <Input
+                id="payment_behaviour"
+                placeholder="ex: Low_spent_Small_value_payments"
+                {...register('payment_behaviour')}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="monthly_balance">Solde Mensuel ($)</Label>
+              <Input
+                id="monthly_balance"
+                type="number"
+                step="0.01"
+                {...register('monthly_balance', { valueAsNumber: true })}
+              />
+            </div>
           </CardContent>
         </Card>
 

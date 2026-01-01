@@ -88,7 +88,7 @@ export function exportClientReport(client: Client): void {
   ========================= */
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
-  doc.text('Personal Information', 20, yPos);
+  doc.text('Informations Personnelles', 20, yPos);
   yPos += 10;
 
   doc.setFontSize(10);

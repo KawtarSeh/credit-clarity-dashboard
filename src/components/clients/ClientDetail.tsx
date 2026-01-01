@@ -38,56 +38,6 @@ interface ClientDetailProps {
 
 /* ===============================
    UI MAPPING (NO BUSINESS LOGIC)
-================================ */
-function getScoreBgColor(score?: string) {
-  switch (score) {
-    case 'A':
-      return 'bg-score-excellent';
-    case 'B':
-      return 'bg-score-good';
-    case 'C':
-      return 'bg-score-fair';
-    case 'D':
-      return 'bg-score-poor';
-    case 'E':
-      return 'bg-destructive';
-    default:
-      return 'bg-muted';
-  }
-}
-
-function getRiskLabel(score?: string) {
-  switch (score) {
-    case 'A':
-      return 'Low';
-    case 'B':
-      return 'Medium';
-    case 'C':
-      return 'High';
-    case 'D':
-    case 'E':
-      return 'Very High';
-    default:
-      return 'Unknown';
-  }
-}
-
-export function ClientDetail({
-  client,
-  onBack,
-  onEdit,
-  onDelete,
-}: ClientDetailProps) {
-  const score = client.credit_score;
-  const riskLevel = getRiskLabel(score);
-
-  const annualInvestment = (client.amount_invested_monthly ?? 0) * 12;
-  const monthlyBalance = client.monthly_balance ?? 1;
-
-  const debtToIncomeRatio = (
-    (annualInvestment / monthlyBalance) *
-    100
-  ).toFixed(1);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -108,19 +58,19 @@ export function ClientDetail({
             onClick={() => exportClientReport(client)}
           >
             <FileDown className="h-4 w-4 mr-2" />
-            Export PDF
+            Exporter PDF
           </Button>
 
           <Button variant="outline" onClick={onEdit}>
             <Edit className="h-4 w-4 mr-2" />
-            Edit
+            Modifier
           </Button>
 
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive">
                 <Trash2 className="h-4 w-4 mr-2" />
-                Delete
+                Supprimer
               </Button>
             </AlertDialogTrigger>
 
@@ -179,8 +129,14 @@ export function ClientDetail({
                   : 'secondary'
               }
             >
-              {riskLevel} Risk
+              Risque {riskLevel}
             </Badge>
+            {client.credit_score && (
+              <div className="mt-4">
+                <p className="text-sm text-muted-foreground">Score Backend</p>
+                <Badge variant="outline" className="mt-1">{client.credit_score}</Badge>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -189,7 +145,7 @@ export function ClientDetail({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="h-5 w-5 text-primary" />
-              Personal Information
+              Informations Personnelles
             </CardTitle>
           </CardHeader>
 
@@ -219,8 +175,8 @@ export function ClientDetail({
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-primary" />
-              Financial Information
+              <CreditCard className="h-5 w-5 text-primary" />
+              Informations de Crédit
             </CardTitle>
           </CardHeader>
 
@@ -298,7 +254,7 @@ export function ClientDetail({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-primary" />
-              Risk Factors
+              Facteurs de Risque
             </CardTitle>
           </CardHeader>
 
