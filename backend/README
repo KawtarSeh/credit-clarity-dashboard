@@ -77,6 +77,6 @@ Le backend utilise **JSON Web Tokens (JWT)** pour sécuriser les routes.
 Commandes pour gérer la base de données :
 
 flask db init
-flask db migrate -m "Initial migration"
+flask db migrate -m "migration"
 flask db upgrade
 
