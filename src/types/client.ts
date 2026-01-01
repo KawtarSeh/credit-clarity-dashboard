@@ -18,7 +18,7 @@ export interface Client {
   amount_invested_monthly?: number;
   payment_behaviour?: string;
   monthly_balance?: number;
-  credit_score?: 'Good' | 'Standard' | 'Poor';
+  credit_score?: 'A' | 'B' | 'C';
   credit_history_age_months?: number;
   
   created_at?: string;

@@ -3,6 +3,7 @@ from .config import Config
 from .extensions import db, migrate, jwt
 from . import models  # Import models to register them with SQLAlchemy
 from .routes.auth import auth_bp
+from .routes.clients import clients_bp
 from flask_cors import CORS
 
 def create_app():
@@ -23,6 +24,9 @@ def create_app():
 
     # Register blueprints
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
+    app.register_blueprint(clients_bp, url_prefix="/api")
+    
+
 
     @app.route("/")
     def home():

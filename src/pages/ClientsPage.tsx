@@ -36,9 +36,8 @@ export function ClientsPage() {
   const filteredClients = useMemo(() => {
     const query = searchQuery.toLowerCase();
     return clients.filter(client =>
-      (client.nom || '').toLowerCase().includes(query) ||
-      (client.prenom || '').toLowerCase().includes(query) ||
-      (client.credit_mix || '').toLowerCase().includes(query)
+      client.nom.toLowerCase().includes(query) ||
+      client.prenom.toLowerCase().includes(query)
     );
   }, [clients, searchQuery]);
 
@@ -147,7 +146,7 @@ export function ClientsPage() {
               <ClientCard
                 key={client.id}
                 client={client}
-                onClick={() => handleClientClick(client.id)}
+                onClick={() => handleClientClick(client.id.toString())}
               />
             ))}
           </div>
